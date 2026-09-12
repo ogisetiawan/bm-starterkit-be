@@ -1,0 +1,336 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL_SERVICE")
+}
+
+model m_activity {
+  activity_id           Int                     @id(map: "PK_m_activity") @default(autoincrement())
+  activity_name         String                  @unique(map: "UQ_m_activity_activity_name") @db.NVarChar(100)
+  created_at            DateTime                @default(now(), map: "DF_m_activity_created_at")
+  updated_at            DateTime?
+  created_by            String?                 @db.UniqueIdentifier
+  updated_by            String?                 @db.UniqueIdentifier
+  is_deleted            Boolean                 @default(false, map: "DF_m_activity_is_deleted")
+  status                Boolean                 @default(true, map: "DF_m_activity_status")
+  m_data_mapping_detail m_data_mapping_detail[]
+  m_mapping_detail      m_mapping_detail[]
+}
+
+model m_approval_route {
+  route_id                Int                       @id(map: "PK__m_approv__28F706FEC1EE0C1C") @default(autoincrement())
+  route_name              String                    @db.NVarChar(100)
+  route_description       String                    @db.NVarChar(100)
+  company_name            String?                   @db.NVarChar(100)
+  company_code            String?                   @db.NVarChar(50)
+  country_name            String?                   @db.NVarChar(100)
+  country_code            String?                   @db.Char(50)
+  is_active               Boolean?                  @default(true, map: "DF__m_approva__is_ac__32767D0B")
+  created_at              DateTime                  @default(now(), map: "DF__m_approva__creat__336AA144")
+  updated_at              DateTime?
+  created_by              String?                   @db.UniqueIdentifier
+  updated_by              String?                   @db.UniqueIdentifier
+  m_approval_route_detail m_approval_route_detail[]
+}
+
+model m_approval_route_detail {
+  route_detail_id   Int              @id(map: "PK__m_approv__996F200E038ED047") @default(autoincrement())
+  route_id          Int
+  requester_user_id String           @db.UniqueIdentifier
+  approver_user_id  String           @db.UniqueIdentifier
+  category          String?          @db.NVarChar(6)
+  category_value    String?          @db.NVarChar(50)
+  m_approval_route  m_approval_route @relation(fields: [route_id], references: [route_id], onUpdate: NoAction, map: "FK_Route_Detail")
+
+  @@index([approver_user_id, requester_user_id], map: "IX_id_user")
+}
+
+model m_data_mapping {
+  data_mapping_id       Int                     @id(map: "PK_m_data_mapping") @default(autoincrement())
+  data_mapping_name     String                  @db.NVarChar(150)
+  created_by            String?                 @db.UniqueIdentifier
+  created_at            DateTime                @default(now(), map: "DF_m_data_mapping_created_at")
+  updated_by            String?                 @db.UniqueIdentifier
+  updated_at            DateTime?
+  status                Int                     @default(1, map: "DF_m_data_mapping_status") @db.TinyInt
+  is_deleted            Boolean                 @default(false, map: "DF_m_data_mapping_is_deleted")
+  m_data_mapping_detail m_data_mapping_detail[]
+}
+
+model m_data_mapping_detail {
+  data_mapping_detail_id  Int            @id(map: "PK_m_data_mapping_detail") @default(autoincrement())
+  data_mapping_id         Int
+  scope_id                Int
+  subcategory_id          Int
+  activity_id             Int
+  emission_id             Int
+  unit_id                 Int
+  gas_id                  Int
+  gas_value               Decimal        @default(0.000000, map: "DF__m_data_ma__gas_v__37703C52") @db.Decimal(18, 6)
+  activity_is_active      Boolean        @default(true, map: "DF__m_data_ma__activ__3864608B")
+  activity_inactive_since DateTime?      @db.Date
+  emission_is_active      Boolean        @default(true, map: "DF__m_data_ma__emiss__395884C4")
+  emission_inactive_since DateTime?      @db.Date
+  country_code            String?        @db.NVarChar(50)
+  country_name            String?        @db.NVarChar(100)
+  company_code            String?        @db.NVarChar(50)
+  company_name            String?        @db.NVarChar(255)
+  m_activity              m_activity     @relation(fields: [activity_id], references: [activity_id], onUpdate: NoAction, map: "FK_m_data_mapping_detail_activity")
+  m_emission              m_emission     @relation(fields: [emission_id], references: [emission_id], onUpdate: NoAction, map: "FK_m_data_mapping_detail_emission")
+  m_gas                   m_gas          @relation(fields: [gas_id], references: [gas_id], onUpdate: NoAction, map: "FK_m_data_mapping_detail_gas")
+  m_scope                 m_scope        @relation(fields: [scope_id], references: [scope_id], onUpdate: NoAction, map: "FK_m_data_mapping_detail_scope")
+  m_subcategory           m_subcategory  @relation(fields: [subcategory_id], references: [subcategory_id], onUpdate: NoAction, map: "FK_m_data_mapping_detail_subcategory")
+  m_unit                  m_unit         @relation(fields: [unit_id], references: [unit_id], onUpdate: NoAction, map: "FK_m_data_mapping_detail_unit")
+  m_data_mapping          m_data_mapping @relation(fields: [data_mapping_id], references: [data_mapping_id], onUpdate: NoAction, map: "FK_mapping_detail_header")
+
+  @@index([scope_id, subcategory_id, activity_id, emission_id, unit_id, gas_id], map: "IX_m_data_mapping_detail_lookup")
+  @@index([data_mapping_id], map: "IX_mapping_detail_header")
+  @@index([activity_id, emission_id, gas_id], map: "IX_mapping_detail_lookup")
+}
+
+model m_emission {
+  emission_id           Int                     @id(map: "PK_m_emission") @default(autoincrement())
+  emission_name         String                  @db.NVarChar(100)
+  reference             String?                 @db.NVarChar(500)
+  public_date           DateTime?               @db.Date
+  link_source           String?                 @db.NVarChar(500)
+  created_at            DateTime                @default(now(), map: "DF_m_emission_created_at")
+  updated_at            DateTime?
+  is_deleted            Boolean                 @default(false, map: "DF_m_emission_is_deleted")
+  status                Boolean                 @default(true, map: "DF_m_emission_status")
+  created_by            String?                 @db.UniqueIdentifier
+  updated_by            String?                 @db.UniqueIdentifier
+  m_data_mapping_detail m_data_mapping_detail[]
+  m_mapping_detail      m_mapping_detail[]
+}
+
+model m_gas {
+  gas_id                Int                     @id(map: "PK_m_gas") @default(autoincrement())
+  gas_name              String                  @unique(map: "UQ_m_gas_gas_name") @db.VarChar(100)
+  created_by            String?                 @db.UniqueIdentifier
+  created_at            DateTime                @default(now(), map: "DF_m_gas_created_at") @db.DateTime
+  updated_by            String?                 @db.UniqueIdentifier
+  updated_at            DateTime?               @db.DateTime
+  is_deleted            Boolean                 @default(false, map: "DF_m_gas_is_deleted")
+  status                Int                     @default(1, map: "DF_m_gas_status") @db.TinyInt
+  m_data_mapping_detail m_data_mapping_detail[]
+}
+
+model m_mapping {
+  mapping_id       Int                @id(map: "PK_m_mapping") @default(autoincrement())
+  mapping_code     String             @unique(map: "UQ_m_mapping_code") @db.NVarChar(50)
+  created_at       DateTime           @default(now(), map: "DF_m_mapping_created_at")
+  updated_at       DateTime?          @default(now(), map: "DF_m_mapping_updated_at")
+  is_deleted       Boolean            @default(false, map: "DF_m_mapping_is_deleted")
+  status           Boolean            @default(true, map: "DF_m_mapping_status")
+  created_by       String?            @db.UniqueIdentifier
+  updated_by       String?            @db.UniqueIdentifier
+  m_mapping_detail m_mapping_detail[]
+}
+
+model m_mapping_detail {
+  mapping_detail_id Int           @id(map: "PK_m_mapping_detail") @default(autoincrement())
+  mapping_id        Int
+  scope_id          Int
+  subcategory_id    Int
+  activity_id       Int
+  emission_id       Int
+  unit_id           Int
+  country_code      String?       @db.NVarChar(50)
+  country_name      String?       @db.NVarChar(100)
+  company_code      String?       @db.NVarChar(50)
+  company_name      String?       @db.NVarChar(100)
+  m_activity        m_activity    @relation(fields: [activity_id], references: [activity_id], onUpdate: NoAction, map: "FK_m_mapping_detail_activity")
+  m_emission        m_emission    @relation(fields: [emission_id], references: [emission_id], onUpdate: NoAction, map: "FK_m_mapping_detail_emission")
+  m_mapping         m_mapping     @relation(fields: [mapping_id], references: [mapping_id], onUpdate: NoAction, map: "FK_m_mapping_detail_mapping")
+  m_scope           m_scope       @relation(fields: [scope_id], references: [scope_id], onUpdate: NoAction, map: "FK_m_mapping_detail_scope")
+  m_subcategory     m_subcategory @relation(fields: [subcategory_id], references: [subcategory_id], onUpdate: NoAction, map: "FK_m_mapping_detail_subcategory")
+  m_unit            m_unit        @relation(fields: [unit_id], references: [unit_id], onUpdate: NoAction, map: "FK_m_mapping_detail_unit")
+
+  @@index([scope_id, subcategory_id, activity_id, emission_id, unit_id], map: "IX_m_data_mapping_detail_lookup")
+  @@index([activity_id], map: "IX_m_mapping_detail_activity_id")
+  @@index([emission_id], map: "IX_m_mapping_detail_emission_id")
+  @@index([mapping_id], map: "IX_m_mapping_detail_mapping_id")
+  @@index([scope_id], map: "IX_m_mapping_detail_scope_id")
+  @@index([subcategory_id], map: "IX_m_mapping_detail_subcategory_id")
+  @@index([unit_id], map: "IX_m_mapping_detail_unit_id")
+}
+
+model m_period {
+  period_id    Int       @id(map: "PK_m_period") @default(autoincrement())
+  period_year  Int       @unique(map: "UQ_m_period_year") @db.SmallInt
+  period_name  String    @db.NVarChar(100)
+  open_period  DateTime
+  close_period DateTime
+  status       Boolean   @default(true, map: "DF_m_period_status")
+  created_at   DateTime  @default(dbgenerated("sysutcdatetime()"), map: "DF_m_period_created_at")
+  updated_at   DateTime?
+  created_by   String    @db.UniqueIdentifier
+  updated_by   String?   @db.UniqueIdentifier
+}
+
+model m_scope {
+  scope_id              Int                     @id(map: "PK__m_scope__7644004562880AE2") @default(autoincrement())
+  scope_name            String                  @unique(map: "UQ__m_scope__20E1CC6D751DBD09") @db.NVarChar(50)
+  definition            String                  @db.NVarChar(500)
+  created_at            DateTime                @default(now(), map: "DF__m_scope__created__37A5467C")
+  updated_at            DateTime?
+  is_deleted            Boolean                 @default(false, map: "DF__m_scope__is_dele__38996AB5")
+  status                Boolean                 @default(true, map: "DF_m_scope_status")
+  created_by            String?                 @db.UniqueIdentifier
+  updated_by            String?                 @db.UniqueIdentifier
+  m_data_mapping_detail m_data_mapping_detail[]
+  m_mapping_detail      m_mapping_detail[]
+}
+
+model m_subcategory {
+  subcategory_id        Int                     @id(map: "PK_m_subcategory") @default(autoincrement())
+  subcategory_name      String                  @unique(map: "UQ_m_subcategory_subcategory_name") @db.NVarChar(100)
+  created_at            DateTime                @default(now(), map: "DF_m_subcategory_created_at")
+  updated_at            DateTime?
+  is_deleted            Boolean                 @default(false, map: "DF_m_subcategory_is_deleted")
+  status                Boolean                 @default(true, map: "DF_m_subcategory_status")
+  created_by            String?                 @db.UniqueIdentifier
+  updated_by            String?                 @db.UniqueIdentifier
+  m_data_mapping_detail m_data_mapping_detail[]
+  m_mapping_detail      m_mapping_detail[]
+}
+
+model m_unit {
+  unit_id               Int                     @id(map: "PK_m_unit") @default(autoincrement())
+  unit_name             String                  @unique(map: "UQ_m_unit_unit_name") @db.NVarChar(50)
+  created_at            DateTime                @default(now(), map: "DF_m_unit_created_at")
+  updated_at            DateTime?
+  is_deleted            Boolean                 @default(false, map: "DF_m_unit_is_deleted")
+  status                Boolean                 @default(true, map: "DF_m_unit_status")
+  created_by            String?                 @db.UniqueIdentifier
+  updated_by            String?                 @db.UniqueIdentifier
+  m_data_mapping_detail m_data_mapping_detail[]
+  m_mapping_detail      m_mapping_detail[]
+}
+
+model trx_activity_inventories {
+  id_activity_inventories           BigInt                              @id(map: "PK_trx_activity_inventories") @default(autoincrement())
+  activity_name                     String                              @db.VarChar(200)
+  activity_id                       Int?
+  scope_id                          Int
+  subcategory_id                    Int
+  country_code                      String?                             @db.VarChar(50)
+  country_name                      String?                             @db.VarChar(100)
+  company_code                      String?                             @db.VarChar(50)
+  company_name                      String?                             @db.VarChar(100)
+  plant_area                        String?                             @db.VarChar(100)
+  emission_id                       Int
+  from_month                        DateTime                            @db.Date
+  to_month                          DateTime                            @db.Date
+  status                            String?                             @default("DRAFT", map: "DF_trx_act_status") @db.VarChar(20)
+  created_at                        DateTime                            @default(dbgenerated("sysutcdatetime()"), map: "DF_trx_act_created_at")
+  updated_at                        DateTime?
+  created_by                        String?                             @db.UniqueIdentifier
+  updated_by                        String?                             @db.UniqueIdentifier
+  trx_activity_inventories_detail   trx_activity_inventories_detail[]
+  trx_activity_inventories_workflow trx_activity_inventories_workflow[]
+
+  @@index([company_code, from_month, to_month], map: "IX_trxactinv_company_period")
+  @@index([country_code], map: "IX_trxactinv_country")
+  @@index([scope_id, subcategory_id], map: "IX_trxactinv_scope_subcat")
+}
+
+model trx_activity_inventories_attachment {
+  id_activity_inventories_attachment BigInt                          @id(map: "PK_trx_activity_inventories_attachment") @default(autoincrement())
+  id_activity_inventories_detail     BigInt
+  file_id                            String?                         @db.UniqueIdentifier
+  file_name                          String                          @db.VarChar(255)
+  file_path                          String                          @db.VarChar(500)
+  file_size                          BigInt?
+  file_type                          String?                         @db.VarChar(100)
+  uploaded_at                        DateTime                        @default(dbgenerated("sysutcdatetime()"), map: "DF_trx_acta_uploaded_at")
+  uploaded_by                        String?                         @db.UniqueIdentifier
+  trx_activity_inventories_detail    trx_activity_inventories_detail @relation(fields: [id_activity_inventories_detail], references: [id_activity_inventories_detail], onDelete: Cascade, onUpdate: NoAction, map: "FK_trx_acta_detail")
+
+  @@index([id_activity_inventories_detail], map: "IX_trxacta_detail")
+}
+
+model trx_activity_inventories_detail {
+  id_activity_inventories_detail      BigInt                                @id(map: "PK_trx_activity_inventories_detail") @default(autoincrement())
+  id_activity_inventories             BigInt
+  period_month                        DateTime                              @db.Date
+  usage_amount                        Decimal                               @default(0.000000, map: "DF_trx_activity_inventories_detail_usage_amount") @db.Decimal(18, 6)
+  unit_id                             Int
+  created_at                          DateTime                              @default(dbgenerated("sysutcdatetime()"), map: "DF_trx_actd_created_at")
+  updated_at                          DateTime?
+  created_by                          String?                               @db.UniqueIdentifier
+  updated_by                          String?                               @db.UniqueIdentifier
+  gas_id                              Int?
+  gas_value                           Decimal?                              @default(0.000000, map: "DF__trx_activ__gas_v__093F5D4E") @db.Decimal(18, 6)
+  total_emission                      Decimal?                              @default(0.000000, map: "DF__trx_activ__total__0A338187") @db.Decimal(18, 6)
+  trx_activity_inventories_attachment trx_activity_inventories_attachment[]
+  trx_activity_inventories            trx_activity_inventories              @relation(fields: [id_activity_inventories], references: [id_activity_inventories], onDelete: Cascade, map: "FK_trx_actd_header")
+
+  @@index([id_activity_inventories, period_month], map: "IX_trxactd_header_period")
+  @@index([period_month], map: "IX_trxactd_period")
+}
+
+model trx_activity_inventories_log {
+  id_log                  BigInt   @id(map: "PK_trx_activity_inventories_log") @default(autoincrement())
+  id_activity_inventories Int
+  action_type             String   @db.VarChar(10)
+  old_data                String?  @db.NVarChar(Max)
+  new_data                String?  @db.NVarChar(Max)
+  changed_at              DateTime @default(dbgenerated("sysutcdatetime()"), map: "DF__trx_activ__chang__3429BB53")
+  changed_by_user_id      String?  @db.UniqueIdentifier
+  changed_by_username     String?  @db.NVarChar(100)
+  changed_by_email        String?  @db.NVarChar(100)
+
+  @@index([id_activity_inventories], map: "IX_trx_activity_inventories_log_log_id")
+}
+
+model trx_activity_inventories_workflow {
+  id_activity_inventories_workflow          BigInt                                      @id(map: "PK_trx_activity_inventories_workflow") @default(autoincrement())
+  id_activity_inventories                   BigInt
+  status                                    String                                      @db.NVarChar(100)
+  status_reason                             String?                                     @db.NVarChar(200)
+  requester_user_id                         String                                      @db.UniqueIdentifier
+  requester_name                            String                                      @db.NVarChar(100)
+  requester_email                           String                                      @db.NVarChar(100)
+  trx_activity_inventories                  trx_activity_inventories                    @relation(fields: [id_activity_inventories], references: [id_activity_inventories], onDelete: Cascade, map: "FK_trx_activity_inventories_workflow")
+  trx_activity_inventories_workflow_history trx_activity_inventories_workflow_history[]
+  trx_activity_inventory_workflow_approval  trx_activity_inventory_workflow_approval[]
+
+  @@index([id_activity_inventories], map: "IX_trx_actinv_wf_header")
+  @@index([status], map: "IX_trx_actinv_wf_status")
+}
+
+model trx_activity_inventories_workflow_history {
+  id_activity_inventories_workflow_history BigInt                            @id(map: "PK_trx_activity_inventories_workflow_history") @default(autoincrement())
+  id_activity_inventories_workflow         BigInt
+  action_user_id                           String                            @db.UniqueIdentifier
+  action_user_name                         String                            @db.NVarChar(100)
+  action_user_email                        String                            @db.NVarChar(255)
+  action_type                              String                            @db.VarChar(50)
+  action_at                                DateTime                          @default(now(), map: "DF__trx_activ__actio__7FB5F314")
+  reason                                   String?                           @db.NVarChar(500)
+  status                                   String                            @db.VarChar(100)
+  step                                     String                            @db.VarChar(100)
+  trx_activity_inventories_workflow        trx_activity_inventories_workflow @relation(fields: [id_activity_inventories_workflow], references: [id_activity_inventories_workflow], onDelete: Cascade, map: "FK_trx_activity_inventories_workflow_history_workflow")
+
+  @@index([action_at(sort: Desc)], map: "IX_trx_activity_inventories_workflow_history_action_at")
+  @@index([id_activity_inventories_workflow], map: "IX_trx_activity_inventories_workflow_history_workflow")
+}
+
+model trx_activity_inventory_workflow_approval {
+  id_activity_inventories_workflow_approval BigInt                            @id(map: "PK_trx_activity_inventory_workflow_approval") @default(autoincrement())
+  id_activity_inventories_workflow          BigInt
+  approval_user_id                          String                            @db.UniqueIdentifier
+  approval_name                             String                            @db.NVarChar(100)
+  approval_mail                             String                            @db.NVarChar(100)
+  step_name                                 String                            @db.NVarChar(100)
+  approval_position                         Boolean
+  trx_activity_inventories_workflow         trx_activity_inventories_workflow @relation(fields: [id_activity_inventories_workflow], references: [id_activity_inventories_workflow], onDelete: Cascade, map: "FK_trx_activity_inventory_workflow_approval_workflow")
+
+  @@index([approval_user_id], map: "IX_trx_actinv_wfapp_approval")
+  @@index([id_activity_inventories_workflow], map: "IX_trx_actinv_wfapp_wf")
+}
