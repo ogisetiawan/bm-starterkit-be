@@ -1,14 +1,17 @@
 // FILE: apps/api-gateway/src/modules/auth/dto/login.dto.ts
 import { IsEmail, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 /**
  * Login input. `app_code` is NOT client-supplied — the gateway injects it
  * from CORE_APP_CODE (see CoreClient).
  */
 export class LoginDto {
+  @ApiProperty({ example: 'user@example.com' })
   @IsEmail()
   email!: string;
 
+  @ApiProperty({ example: 'secret' })
   @IsString()
   @IsNotEmpty()
   @MaxLength(128)

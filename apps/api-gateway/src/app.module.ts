@@ -7,7 +7,7 @@ import configuration from './config/configuration';
 import { validationSchema } from './config/validation.schema';
 import { ContextInjectionInterceptor } from './interceptors/context-injection.interceptor';
 import { AuthModule } from './modules/auth/auth.module';
-import { ProxyModule } from './modules/proxy/proxy.module';
+import { ActivityModule } from './modules/proxy/api-services/master-data/activity/activity.module';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { ProxyModule } from './modules/proxy/proxy.module';
     }),
     InternalJwtModule,
     AuthModule,
-    ProxyModule,
+    ActivityModule,
   ],
   providers: [
     {

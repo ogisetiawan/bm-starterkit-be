@@ -25,12 +25,24 @@ async function bootstrap(): Promise<void> {
       .setTitle('BM Starterkit API Gateway')
       .setDescription('BFF endpoints forwarded to internal API services')
       .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:'Copy access token your web',
+        },
+        'bearer',
+      )
       .addServer('', 'Local')
       .addServer('/gateway', 'Public')
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('api-docs', app, document, {
-      swaggerOptions: { persistAuthorization: true },
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+      },
     });
   }
 

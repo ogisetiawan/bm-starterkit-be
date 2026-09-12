@@ -1,4 +1,4 @@
-// FILE: apps/api-gateway/src/modules/proxy/proxy.service.ts
+// FILE: apps/api-gateway/src/modules/proxy/api-services/master-data/activity/activity.service.ts
 import {
   HttpException,
   Injectable,
@@ -13,17 +13,17 @@ import { HEADERS } from '@common/index';
 
 const SERVICES_TIMEOUT_MS = 5000;
 
-export interface ProxiedResponse {
+export interface ActivityProxiedResponse {
   status: number;
   data: unknown;
 }
 
 /**
- * Forwards requests to api-services. Relies on ContextInjectionInterceptor
+ * Forwards activity requests to api-services. Relies on ContextInjectionInterceptor
  * having already injected the trust-boundary headers onto the request.
  */
 @Injectable()
-export class ProxyService {
+export class ActivityService {
   private readonly baseUrl: string;
 
   constructor(
@@ -39,7 +39,7 @@ export class ProxyService {
     method: string,
     path: string,
     req: Request,
-  ): Promise<ProxiedResponse> {
+  ): Promise<ActivityProxiedResponse> {
     try {
       const response: AxiosResponse<unknown> = await firstValueFrom(
         this.http.request<unknown>({

@@ -18,10 +18,16 @@ export class CoreBearerGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<Request>();
     const authorization = req.headers.authorization;
 
-    if (
-      typeof authorization !== 'string' ||
-      !/^Bearer\s+\S+$/i.test(authorization)
-    ) {
+    if (typeof authorization !== 'string' || authorization.trim().length === 0) {
+      throw new UnauthorizedException('Missing bearer token');
+    }
+
+    // Allow "Bearer <token>" and accidental "Bearer Bearer <token>" from Swagger.
+    let token = authorization.trim();
+    while (/^Bearer\s+/i.test(token)) {
+      token = token.replace(/^Bearer\s+/i, '').trim();
+    }
+    if (token.length === 0) {
       throw new UnauthorizedException('Missing bearer token');
     }
 

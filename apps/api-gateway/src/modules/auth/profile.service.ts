@@ -36,7 +36,7 @@ export class ProfileService {
     try {
       const { data } = await firstValueFrom(
         this.http.get<unknown>(`${this.baseUrl}/auth/profile`, {
-          headers: { authorization: `Bearer ${userJwt}` },
+          headers: { Authorization: `Bearer ${userJwt}` },
           timeout: CORE_TIMEOUT_MS,
         }),
       );

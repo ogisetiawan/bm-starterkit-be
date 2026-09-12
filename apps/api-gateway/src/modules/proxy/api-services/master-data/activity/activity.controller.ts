@@ -1,6 +1,5 @@
-// FILE: apps/api-gateway/src/modules/proxy/proxy.controller.ts
+// FILE: apps/api-gateway/src/modules/proxy/api-services/master-data/activity/activity.controller.ts
 import {
-  All,
   Controller,
   Delete,
   Get,
@@ -23,10 +22,9 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { CoreBearerGuard } from '../auth/guards/core-bearer.guard';
-import { ProxyService } from './proxy.service';
+import { CoreBearerGuard } from '../../../../auth/guards/core-bearer.guard';
+import { ActivityService } from './activity.service';
 
-const PROXY_PREFIX = '/api';
 const ACTIVITY_BODY_SCHEMA = {
   type: 'object',
   properties: {
@@ -40,17 +38,17 @@ const ACTIVITY_BODY_SCHEMA = {
 } as const;
 
 /**
- * Gateway routes that forward requests to api-services.
+ * Gateway routes that forward activity requests to api-services.
  * CoreBearerGuard requires a token; Core validates it through `/auth/profile`.
  * ContextInjectionInterceptor then injects the trust-boundary headers.
  */
 @ApiTags('Activities')
-@ApiBearerAuth()
-// @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token' })
+@ApiBearerAuth('bearer')
+@ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token' })
 @Controller()
-// @UseGuards(CoreBearerGuard)
-export class ProxyController {
-  constructor(private readonly proxy: ProxyService) {}
+@UseGuards(CoreBearerGuard)
+export class ActivityController {
+  constructor(private readonly activityService: ActivityService) {}
 
   @Post('activities')
   @ApiOperation({ summary: 'Create an activity' })
@@ -113,20 +111,16 @@ export class ProxyController {
     await this.forwardTo(`/activities/${encodeURIComponent(id)}`, req, res);
   }
 
-  /** Backward-compatible generic proxy route. */
-  // @All('api/*')
-  // async forward(@Req() req: Request, @Res() res: Response): Promise<void> {
-  //   const path =
-  //     req.originalUrl.split('?')[0].slice(PROXY_PREFIX.length) || '/';
-  //   await this.forwardTo(path, req, res);
-  // }
-
   private async forwardTo(
     path: string,
     req: Request,
     res: Response,
   ): Promise<void> {
-    const { status, data } = await this.proxy.forward(req.method, path, req);
+    const { status, data } = await this.activityService.forward(
+      req.method,
+      path,
+      req,
+    );
     res.status(status).json(data);
   }
 }
