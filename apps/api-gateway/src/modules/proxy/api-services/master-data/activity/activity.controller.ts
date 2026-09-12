@@ -14,6 +14,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -22,7 +23,10 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { MenuKey } from '../../../../auth/decorators/menu-key.decorator';
+import { RequirePermission } from '../../../../auth/decorators/require-permission.decorator';
 import { CoreBearerGuard } from '../../../../auth/guards/core-bearer.guard';
+import { MenuPermissionGuard } from '../../../../auth/guards/menu-permission.guard';
 import { ActivityService } from './activity.service';
 
 const ACTIVITY_BODY_SCHEMA = {
@@ -39,18 +43,21 @@ const ACTIVITY_BODY_SCHEMA = {
 
 /**
  * Gateway routes that forward activity requests to api-services.
- * CoreBearerGuard requires a token; Core validates it through `/auth/profile`.
- * ContextInjectionInterceptor then injects the trust-boundary headers.
+ * Guard order: CoreBearerGuard → MenuPermissionGuard.
+ * Menu permissions come from Core `GET /auth/menupermissions` (`menu_key=ghg-activity-inventories`).
  */
 @ApiTags('Activities')
 @ApiBearerAuth('bearer')
 @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token' })
+@ApiForbiddenResponse({ description: 'Missing menu permission' })
+@MenuKey('ghg-activity-inventories') // sample for activity is not ghg-activity-inventories, u can check direct on core
 @Controller()
-@UseGuards(CoreBearerGuard)
+@UseGuards(CoreBearerGuard, MenuPermissionGuard)
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
   @Post('activities')
+  @RequirePermission('create-data')
   @ApiOperation({ summary: 'Create an activity' })
   @ApiBody({ schema: { ...ACTIVITY_BODY_SCHEMA, required: ['activityName'] } })
   @ApiCreatedResponse({ description: 'Activity created' })
@@ -62,6 +69,7 @@ export class ActivityController {
   }
 
   @Get('activities')
+  @RequirePermission('show-list-data')
   @ApiOperation({ summary: 'List activities' })
   @ApiOkResponse({ description: 'Paginated activity list' })
   async listActivities(
@@ -72,6 +80,7 @@ export class ActivityController {
   }
 
   @Get('activities/:id')
+  @RequirePermission('show-detail-data')
   @ApiOperation({ summary: 'Get an activity' })
   @ApiParam({ name: 'id', type: Number })
   @ApiOkResponse({ description: 'Activity detail' })
@@ -85,6 +94,7 @@ export class ActivityController {
   }
 
   @Patch('activities/:id')
+  @RequirePermission('update-data')
   @ApiOperation({ summary: 'Update an activity' })
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({ schema: ACTIVITY_BODY_SCHEMA })
@@ -99,6 +109,7 @@ export class ActivityController {
   }
 
   @Delete('activities/:id')
+  @RequirePermission('update-data')
   @ApiOperation({ summary: 'Soft-delete an activity' })
   @ApiParam({ name: 'id', type: Number })
   @ApiOkResponse({ description: 'Activity deleted' })

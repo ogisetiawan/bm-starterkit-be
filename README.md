@@ -3,7 +3,7 @@
 NestJS monorepo starterkit — 2 apps, 3 shared libs:
 
 - `apps/api-gateway` (`:3000`) — BFF: auth, RBAC, context injection, proxy, swagger
-- `apps/api-services` (`:3001`) — internal service: business logic, master data, Prisma ORM, 
+- `apps/api-services` (`:3001`) — internal service: business logic, master data, Prisma ORM
 - `libs/common` — filters, interceptors, logger, constants, shared DTOs
 - `libs/auth` — internal JWT service, `@CurrentUser`, `AuthContext`
 - `libs/database` — abstract `BaseRepository` only (no Prisma imports)
@@ -34,7 +34,7 @@ pnpm start:services         # run compiled services
 
 - Package manager: **pnpm** (see `packageManager` in `package.json`).
 - TypeScript strict mode; path aliases `@common/*`, `@auth/*`, `@database/*`.
-- Development proceeds step-by-step per `TASK.md` (current: STEP 1 — bootstrap).
+- `api-services` tidak boleh diekspos publik; hanya menerima traffic dari gateway.
 
 ## Changelog
 

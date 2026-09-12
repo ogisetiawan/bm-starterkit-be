@@ -32,29 +32,14 @@ export class AuthService {
   }
 
   private extractBearer(authorization: string | undefined): string {
-    if (!authorization) {
+    if (!authorization || !authorization.startsWith('Bearer ')) {
       throw new UnauthorizedException('Missing bearer token');
     }
-
-    // Accept "Bearer <token>" (case-insensitive). If the user pasted
-    // "Bearer <token>" into Swagger Authorize, Swagger may send
-    // "Bearer Bearer <token>" — strip every leading Bearer prefix.
-    let token = authorization.trim();
-    while (/^Bearer\s+/i.test(token)) {
-      token = token.replace(/^Bearer\s+/i, '').trim();
-    }
-
-    // Strip accidental surrounding quotes from Swagger paste.
-    if (
-      (token.startsWith('"') && token.endsWith('"')) ||
-      (token.startsWith("'") && token.endsWith("'"))
-    ) {
-      token = token.slice(1, -1).trim();
-    }
-
+    const token = authorization.slice('Bearer '.length).trim();
     if (token.length === 0) {
       throw new UnauthorizedException('Missing bearer token');
     }
     return token;
   }
+
 }
