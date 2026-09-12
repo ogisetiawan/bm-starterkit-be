@@ -20,6 +20,7 @@
     "prisma:pull": "prisma db pull --schema=apps/api-services/prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema=apps/api-services/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=apps/api-services/prisma/schema.prisma",
+    "generate:keys": "node scripts/generate-keys.mjs",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "release": "standard-version"
   },

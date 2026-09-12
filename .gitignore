@@ -33,3 +33,4 @@ Thumbs.db
 apps/api-services/prisma/migrations/
 
 .cursor
+AGENT.md
