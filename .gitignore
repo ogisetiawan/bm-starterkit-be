@@ -31,6 +31,3 @@ Thumbs.db
 # Misc
 *.tsbuildinfo
 apps/api-services/prisma/migrations/
-
-.cursor
-AGENT.md
