@@ -50,9 +50,10 @@ const ACTIVITY_BODY_SCHEMA = {
 @ApiBearerAuth('bearer')
 @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token' })
 @ApiForbiddenResponse({ description: 'Missing menu permission' })
-@MenuKey('ghg-activity-inventories') // sample for activity is not ghg-activity-inventories, u can check direct on core
+// @MenuKey('ghg-activity-inventories') // sample for activity is not ghg-activity-inventories, u can check direct on core
 @Controller()
-@UseGuards(CoreBearerGuard, MenuPermissionGuard)
+// @UseGuards(CoreBearerGuard, MenuPermissionGuard)
+@UseGuards(CoreBearerGuard)
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
 
@@ -69,7 +70,7 @@ export class ActivityController {
   }
 
   @Get('activities')
-  @RequirePermission('show-list-data')
+  // @RequirePermission('show-list-data')
   @ApiOperation({ summary: 'List activities' })
   @ApiOkResponse({ description: 'Paginated activity list' })
   async listActivities(

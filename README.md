@@ -772,6 +772,11 @@ CHANGELOG.md
 
 Potential extensions for this starter kit:
 
+* [x] API Interface auth/profile
+* [ ] RBAC Core ( DataAccessPermisson )
+* [ ] API Envolope Response ( List,Create,Patch)
+* [ ] Storage Services ( using api-key/header Cross Apps )
+* [ ] List Payload Structure 
 * [ ] Unit testing
 * [ ] Integration testing
 * [ ] E2E testing
